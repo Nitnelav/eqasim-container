@@ -44,5 +44,3 @@ RUN conda env create -f /tmp/environment.yml -n eqasim
 
 # Activate the environment
 RUN echo "source activate eqasim" > ~/.bashrc
-
-# SHELL ["conda", "run", "--no-capture-output", "-n", "eqasim", "/bin/bash", "-c"]
