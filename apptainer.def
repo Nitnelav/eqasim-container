@@ -1,0 +1,40 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%files
+    environment.yml /data/environment.yml
+
+%post
+    apt-get update && apt-get install -y \
+        openjdk-17-jdk \
+        maven \
+        python3 \
+        python3-pip \
+        unzip \
+        wget \
+        git \
+        && apt-get clean
+
+    # Install Osmosis
+    wget --quiet https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip -O /tmp/osmosis.zip && \
+    unzip /tmp/osmosis.zip -d /opt/osmosis && \
+    rm /tmp/osmosis.zip && \
+    ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
+
+    # Install Miniconda
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+    /bin/bash /tmp/miniconda.sh -b -p /opt/conda && \
+    rm /tmp/miniconda.sh
+
+    # Create conda environment from environment.yml
+    /opt/conda/bin/conda env create -f /data/environment.yml -n eqasim && \
+    rm /data/environment.yml
+
+%environment
+    export DEBIAN_FRONTEND=noninteractive
+    export PATH=/opt/conda/bin:$PATH
+
+    source /opt/conda/bin/activate eqasim
+
+%runscript
+    exec python -m synpp "$@"
