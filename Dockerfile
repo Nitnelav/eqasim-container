@@ -4,6 +4,8 @@ FROM ubuntu:24.04
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG env_path
+
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     openjdk-17-jdk \
@@ -36,8 +38,15 @@ RUN java -version && \
     conda --version && \
     which osmosis
 
-# Copy the environment.yml file into the container
-COPY environment.yml /tmp/environment.yml
+# Copy the environment.yml file into the container if env_path is set (else will create an empty directory)
+COPY ${env_path} /tmp/environment.yml.tmp
+
+# Check if env_path is set, if not download from the git repo
+RUN if [ -z "$env_path" ]; then \
+    wget --quiet https://raw.githubusercontent.com/eqasim-org/ile-de-france/refs/heads/develop/environment.yml -O /tmp/environment.yml; \
+    else \
+    mv /tmp/environment.yml.tmp /tmp/environment.yml; \
+    fi
 
 # Create the conda environment
 RUN conda env create -f /tmp/environment.yml -n eqasim
