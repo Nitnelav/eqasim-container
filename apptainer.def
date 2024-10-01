@@ -1,8 +1,16 @@
 Bootstrap: docker
 From: ubuntu:24.04
 
-%files
-    environment.yml /data/environment.yml
+%arguments
+    env_path=./environment.yml
+
+%setup
+    mkdir -p ${APPTAINER_ROOTFS}/tmp_data
+    if [ -f {{ env_path }} ]; then \
+        cp {{ env_path }} ${APPTAINER_ROOTFS}/tmp_data/environment.yml.tmp \
+    else \
+        touch ${APPTAINER_ROOTFS}/tmp_data/environment.yml.tmp; \
+    fi
 
 %post
     apt-get update && apt-get install -y \
@@ -16,19 +24,25 @@ From: ubuntu:24.04
         && apt-get clean
 
     # Install Osmosis
-    wget --quiet https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip -O /tmp/osmosis.zip && \
-    unzip /tmp/osmosis.zip -d /opt/osmosis && \
-    rm /tmp/osmosis.zip && \
+    wget --quiet https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.zip -O /tmp_data/osmosis.zip && \
+    unzip /tmp_data/osmosis.zip -d /opt/osmosis && \
+    rm /tmp_data/osmosis.zip && \
     ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
 
     # Install Miniconda
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
-    /bin/bash /tmp/miniconda.sh -b -p /opt/conda && \
-    rm /tmp/miniconda.sh
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp_data/miniconda.sh && \
+    /bin/bash /tmp_data/miniconda.sh -b -p /opt/conda && \
+    rm /tmp_data/miniconda.sh
+
+    if [ ! -s /tmp_data/environment.yml.tmp ]; then \
+        wget --quiet https://raw.githubusercontent.com/eqasim-org/ile-de-france/refs/heads/develop/environment.yml -O /tmp_data/environment.yml; \
+    else \
+        mv /tmp_data/environment.yml.tmp /tmp_data/environment.yml; \
+    fi
 
     # Create conda environment from environment.yml
-    /opt/conda/bin/conda env create -f /data/environment.yml -n eqasim && \
-    rm /data/environment.yml
+    /opt/conda/bin/conda env create -f /tmp_data/environment.yml -n eqasim && \
+    rm /tmp_data/environment.yml
 
 %environment
     export DEBIAN_FRONTEND=noninteractive
