@@ -14,7 +14,7 @@ To run the pipeline :
 docker run --rm -it \
     --mount type=bind,src=/path/to/eqasim-ile-de-france,target=/usr/local/eqasim \
     --mount type=bind,src=/path/to/eqasim-data,target=/usr/local/eqasim-data \
-    eqasim /bin/bash -l -c "cd /usr/local/eqasim && python -m synpp"`
+    ghcr.io/nitnelav/eqasim-container:main /bin/bash -l -c "cd /usr/local/eqasim && python -m synpp"`
 ```
 
 where :
