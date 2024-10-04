@@ -33,4 +33,4 @@ To run the pipeline :
 `apptainer run eqasim.sif`
 
 You can also run it from the docker container directly : 
-`apptainer run ghcr.io/nitnelav/eqasim-container:main /bin/bash`
+`apptainer run docker://ghcr.io/nitnelav/eqasim-container:main /bin/bash`
